@@ -1,0 +1,3 @@
+/Users/granch/documents/dev/physics/build/CMakeFiles/physics.dir
+/Users/granch/documents/dev/physics/build/CMakeFiles/edit_cache.dir
+/Users/granch/documents/dev/physics/build/CMakeFiles/rebuild_cache.dir
