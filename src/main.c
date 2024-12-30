@@ -8,16 +8,16 @@
 
 #define WIDTH 800
 #define HEIGHT 600
-#define PARTICLE_COUNT 1028
+#define PARTICLE_COUNT 1000
 #define RADIUS 10.0f
 #define INIT_POS_X 5+RADIUS+1
 #define INIT_POS_Y 105
 #define INIT_VEL_X 5
 #define g 9.81f*20
 #define FIXED_DT 1/60.0f
-#define WALL_COLLISION_DAMPING 1
+#define WALL_COLLISION_DAMPING 0.3f
 #define MIN_STARTING_DISTANCE 45
-#define CR 1
+#define CR 0.02f
 
 struct particle {
 	Vector2 position;
@@ -70,8 +70,8 @@ void constraint(struct container *container) {
 	for(size_t i = 0; i < particle_count; i++) {
 		struct particle *p = &container->particles[i];
 
-		float v_y = (p->position.y - p->prev_position.y);
-	float v_x = (p->position.x - p->prev_position.x);
+	float v_y = (p->position.y - p->prev_position.y) * WALL_COLLISION_DAMPING;
+	float v_x = (p->position.x - p->prev_position.x) * WALL_COLLISION_DAMPING;
 
 	if(p->position.x + RADIUS >=x1) {
 		p->position.x = x1 - RADIUS;
@@ -100,7 +100,38 @@ void constraint(struct container *container) {
 }
 
 void solve_collisions(struct container *container) {
-	
+
+	for(size_t i = 0; i < particle_count; i++) {
+		for(size_t k = i+1; k < particle_count; k++) {
+			struct particle *p1 = &container->particles[i];
+			struct particle *p2 = &container->particles[k];
+			const float dx = p1->position.x - p2->position.x;
+			const float dy = p1->position.y - p2->position.y;
+			const float dist = get_distance(*p1,*p2);
+			if(dist < 2*RADIUS) {
+				float delta = 0.5f*CR*(dist - 2*RADIUS);
+					p1->position.x -= delta;
+					p2->position.y += delta;
+					p1->position.y -= delta;
+					p2->position.y += delta;
+				// if(dx < 0) {
+				// 	p1->position.x -= delta;
+				// 	p2->position.y += delta;
+				// } else {
+				// p1->position.x += delta;
+				// p2->position.x -= delta;
+				// }
+				// if(dy < 0) {
+				// p1->position.y -= delta;
+				// p2->position.y += delta;
+				// } else {
+				// 	p1->position.y += delta;
+				// p2->position.y -= delta;
+				// }
+				
+			}
+		}
+	}
 }
 
 void draw(struct container *container) {
@@ -154,6 +185,12 @@ int main(int argc, char *argv[])
 
 
 	while(!WindowShouldClose()) {
+		if(IsKeyDown(KEY_R)) {
+				init(&container);
+				elapsed_time -=particle_delay;
+				particle_count = 0;
+
+		}
 		float delta_time = GetFrameTime();
 		        elapsed_time += delta_time;
 
@@ -164,6 +201,7 @@ int main(int argc, char *argv[])
 		}
 		update(&container);
 		constraint(&container);
+		solve_collisions(&container);
 		draw(&container);
 		
 		
