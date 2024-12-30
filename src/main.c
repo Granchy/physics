@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <raylib.h>
 #include <strings.h>
@@ -6,32 +6,33 @@
 #include <time.h>
 
 
-#define WIDTH 800
-#define HEIGHT 600
-#define PARTICLE_COUNT 1000
-#define RADIUS 10.0f
+#define WIDTH 2560
+#define HEIGHT 1600
+#define PARTICLE_COUNT 1000000
+#define RADIUS 5.0f
 #define INIT_POS_X 5+RADIUS+1
 #define INIT_POS_Y 105
-#define INIT_VEL_X 5
-#define g 9.81f*20
+#define INIT_VEL_X 50
+#define g 9.81f*40
 #define FIXED_DT 1/60.0f
-#define WALL_COLLISION_DAMPING 0.3f
+#define WALL_COLLISION_DAMPING 0.5f
 #define MIN_STARTING_DISTANCE 45
-#define CR 0.02f
+#define CR 1.0f
 
 struct particle {
 	Vector2 position;
 	Vector2 prev_position;
+	Color color;
 };
 
 struct container {
 	Vector2 position;
 	Vector2 size;
-	struct particle particles[PARTICLE_COUNT];
+	struct particle *particles;
 };
 
-void constraint(struct container *container);
 float get_distance(struct particle p, struct particle np);
+Color get_random_color();
 
 	int particle_count = 0;
 
@@ -50,7 +51,7 @@ float temp_pos_x = p->position.x;
 	p->prev_position.y = temp_pos_y;
 	p->position.x = 2*temp_pos_x - p->prev_position.x;
 	p->prev_position.x = temp_pos_x;
-		
+
 	
 
 	}
@@ -105,30 +106,16 @@ void solve_collisions(struct container *container) {
 		for(size_t k = i+1; k < particle_count; k++) {
 			struct particle *p1 = &container->particles[i];
 			struct particle *p2 = &container->particles[k];
-			const float dx = p1->position.x - p2->position.x;
-			const float dy = p1->position.y - p2->position.y;
+			
 			const float dist = get_distance(*p1,*p2);
+			const float n_x = (p1->position.x - p2->position.x)/dist;
+			const float n_y = (p1->position.y - p2->position.y)/dist;
 			if(dist < 2*RADIUS) {
 				float delta = 0.5f*CR*(dist - 2*RADIUS);
-					p1->position.x -= delta;
-					p2->position.y += delta;
-					p1->position.y -= delta;
-					p2->position.y += delta;
-				// if(dx < 0) {
-				// 	p1->position.x -= delta;
-				// 	p2->position.y += delta;
-				// } else {
-				// p1->position.x += delta;
-				// p2->position.x -= delta;
-				// }
-				// if(dy < 0) {
-				// p1->position.y -= delta;
-				// p2->position.y += delta;
-				// } else {
-				// 	p1->position.y += delta;
-				// p2->position.y -= delta;
-				// }
-				
+					p1->position.x -= n_x*delta;
+					p2->position.x += n_x*delta;
+					p1->position.y -= n_y*delta;
+					p2->position.y += n_y*delta;
 			}
 		}
 	}
@@ -141,7 +128,7 @@ void draw(struct container *container) {
 		DrawFPS(10,10);
 		for(size_t i = 0; i < particle_count; i++) {
 			
-		DrawCircleV(container->particles[i].position,RADIUS, BLUE);
+		DrawCircleV(container->particles[i].position,RADIUS, container->particles[i].color);
 		}
 
 		EndDrawing();
@@ -155,19 +142,25 @@ float get_distance(struct particle p, struct particle np) {
 	return distance;
 }
 
+Color get_random_color() {
+	Color colors[] = { RED, GREEN, BLUE, YELLOW, ORANGE, PINK, WHITE, BLACK };
+	const int color_count = sizeof(colors)/sizeof(colors[0]);
+	return colors[GetRandomValue(0,color_count)]; 
+}
 
 
 void init(struct container *container) {
 
 	container->position = (Vector2){5,5};
 	container->size = (Vector2){WIDTH-10,HEIGHT-10};
+	container->particles = (struct particle *)malloc(PARTICLE_COUNT*sizeof(struct particle));
 
 	for(size_t i = 0; i < PARTICLE_COUNT; i++) {
 		container->particles[i].position.x = INIT_POS_X;
 		container->particles[i].position.y = INIT_POS_Y;
 		container->particles[i].prev_position.x = INIT_POS_X - INIT_VEL_X;
 		container->particles[i].prev_position.y = INIT_POS_Y;
-
+		container->particles[i].color = get_random_color();
 	}
 }
 
@@ -177,7 +170,7 @@ int main(int argc, char *argv[])
 	InitWindow(WIDTH,HEIGHT,"physics");
 	SetTargetFPS(60);
 
-	float particle_delay = 0.1f;
+	float particle_delay = 0.0001f;
 	float elapsed_time = 0.0f;
 
 	struct container container;
@@ -185,6 +178,7 @@ int main(int argc, char *argv[])
 
 
 	while(!WindowShouldClose()) {
+		if (IsKeyPressed(KEY_F10)) ToggleFullscreen();
 		if(IsKeyDown(KEY_R)) {
 				init(&container);
 				elapsed_time -=particle_delay;
