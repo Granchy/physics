@@ -6,8 +6,8 @@
 #include <time.h>
 
 
-#define WIDTH 2560
-#define HEIGHT 1600
+#define WIDTH 800
+#define HEIGHT 600
 #define PARTICLE_COUNT 1000000
 #define RADIUS 5.0f
 #define INIT_POS_X 5+RADIUS+1
@@ -18,6 +18,11 @@
 #define WALL_COLLISION_DAMPING 0.5f
 #define MIN_STARTING_DISTANCE 45
 #define CR 1.0f
+#define GRID_WIDTH 128
+#define GRID_HEIGHT 80
+#define ROWS 2560/GRID_WIDTH
+#define COLS 1600/GRID_HEIGHT
+
 
 struct particle {
 	Vector2 position;
@@ -31,6 +36,10 @@ struct container {
 	struct particle *particles;
 };
 
+struct particle ****grid;
+int grid_cell_counts[ROWS][COLS];
+
+void append_particle(size_t i, size_t j, struct particle *p);
 float get_distance(struct particle p, struct particle np);
 Color get_random_color();
 
@@ -103,10 +112,15 @@ void constraint(struct container *container) {
 void solve_collisions(struct container *container) {
 
 	for(size_t i = 0; i < particle_count; i++) {
-		for(size_t k = i+1; k < particle_count; k++) {
-			struct particle *p1 = &container->particles[i];
-			struct particle *p2 = &container->particles[k];
-			
+		append_particle(container->particles[i].position.x/GRID_WIDTH, container->particles[i].position.y/GRID_HEIGHT, &container->particles[i]);
+	}
+
+	for(int i =0; i < ROWS; i++) {
+		for(int j =0; j < COLS; j++) {
+			for(int k1 = 0; k1 < grid_cell_counts[i][j]; k1++) {
+				for(int k2 = k1 +1; k2<grid_cell_counts[i][j]; k2++) {
+					struct particle *p1 = grid[i][j][k1];
+					struct particle *p2 = grid[i][j][k2];
 			const float dist = get_distance(*p1,*p2);
 			const float n_x = (p1->position.x - p2->position.x)/dist;
 			const float n_y = (p1->position.y - p2->position.y)/dist;
@@ -116,9 +130,29 @@ void solve_collisions(struct container *container) {
 					p2->position.x += n_x*delta;
 					p1->position.y -= n_y*delta;
 					p2->position.y += n_y*delta;
+				}
 			}
 		}
 	}
+
+	// for(size_t i = 0; i < particle_count; i++) {
+	// 	for(size_t k = i+1; k < particle_count; k++) {
+	// 		struct particle *p1 = &container->particles[i];
+	// 		struct particle *p2 = &container->particles[k];
+			
+	// 		const float dist = get_distance(*p1,*p2);
+	// 		const float n_x = (p1->position.x - p2->position.x)/dist;
+	// 		const float n_y = (p1->position.y - p2->position.y)/dist;
+	// 		if(dist < 2*RADIUS) {
+	// 			float delta = 0.5f*CR*(dist - 2*RADIUS);
+	// 				p1->position.x -= n_x*delta;
+	// 				p2->position.x += n_x*delta;
+	// 				p1->position.y -= n_y*delta;
+	// 				p2->position.y += n_y*delta;
+	// 		}
+	// 	}
+	// }
+}
 }
 
 void draw(struct container *container) {
@@ -132,6 +166,16 @@ void draw(struct container *container) {
 		}
 
 		EndDrawing();
+	// for(size_t i = 0; i < ROWS; i++) {
+	// 	for(size_t j =0; j < COLS; j++) {
+	// 		for(size_t k = 0; k < grid_cell_counts[i][j]; k++) {
+	// 			free(grid[i][j][k]);
+	// 		}
+	// 		free(grid[i][j]);
+	// 	}
+	// 	free(grid[i]);
+	// }
+	// free(grid);
 }
 
 float get_distance(struct particle p, struct particle np) {
@@ -155,6 +199,8 @@ void init(struct container *container) {
 	container->size = (Vector2){WIDTH-10,HEIGHT-10};
 	container->particles = (struct particle *)malloc(PARTICLE_COUNT*sizeof(struct particle));
 
+	
+
 	for(size_t i = 0; i < PARTICLE_COUNT; i++) {
 		container->particles[i].position.x = INIT_POS_X;
 		container->particles[i].position.y = INIT_POS_Y;
@@ -162,6 +208,24 @@ void init(struct container *container) {
 		container->particles[i].prev_position.y = INIT_POS_Y;
 		container->particles[i].color = get_random_color();
 	}
+
+	grid = (struct particle ****)malloc(ROWS * sizeof(struct particle ***));
+	for(size_t i = 0; i < ROWS; i++) {
+		grid[i] = (struct particle ***)malloc(COLS * sizeof(struct particle **));
+		for(size_t j = 0; j < COLS; j++) {
+			grid[i][j] = (struct particle **)malloc(sizeof(struct particle *));
+		}
+		}
+
+
+
+}
+
+void append_particle(size_t i, size_t j, struct particle *p) {
+	grid[i][j] = realloc(grid[i][j], (grid_cell_counts[i][j]+1)*sizeof(struct particle *));
+
+	grid[i][j][grid_cell_counts[i][j]] = p;
+	grid_cell_counts[i][j]++;
 }
 
 
@@ -178,7 +242,7 @@ int main(int argc, char *argv[])
 
 
 	while(!WindowShouldClose()) {
-		if (IsKeyPressed(KEY_F10)) ToggleFullscreen();
+		// if (IsKeyPressed(KEY_F10)) ToggleFullscreen();
 		if(IsKeyDown(KEY_R)) {
 				init(&container);
 				elapsed_time -=particle_delay;
@@ -193,6 +257,8 @@ int main(int argc, char *argv[])
 			
 		elapsed_time -=particle_delay;
 		}
+
+
 		update(&container);
 		constraint(&container);
 		solve_collisions(&container);
