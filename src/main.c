@@ -8,7 +8,7 @@
 
 #define WIDTH 800
 #define HEIGHT 600
-#define PARTICLE_COUNT 1000000
+#define PARTICLE_COUNT 10000
 #define RADIUS 5.0f
 #define INIT_POS_X 5+RADIUS+1
 #define INIT_POS_Y 105
@@ -75,7 +75,7 @@ void constraint(struct container *container) {
 	int x1 = container->position.x + container->size.x;
 
 	int y0 = container->position.y;
-	int y1 =  container->size.y + container->position.x;
+	int y1 =  container->size.y + container->position.y;
 
 	for(size_t i = 0; i < particle_count; i++) {
 		struct particle *p = &container->particles[i];
@@ -110,7 +110,7 @@ void constraint(struct container *container) {
 }
 
 void solve_collisions(struct container *container) {
-
+	int range = 1;
 	for(size_t i = 0; i < particle_count; i++) {
 		append_particle(container->particles[i].position.x/GRID_WIDTH, container->particles[i].position.y/GRID_HEIGHT, &container->particles[i]);
 	}
@@ -118,10 +118,19 @@ void solve_collisions(struct container *container) {
 	for(int i =0; i < ROWS; i++) {
 		for(int j =0; j < COLS; j++) {
 			for(int k1 = 0; k1 < grid_cell_counts[i][j]; k1++) {
-				for(int k2 = k1 +1; k2<grid_cell_counts[i][j]; k2++) {
-					struct particle *p1 = grid[i][j][k1];
-					struct particle *p2 = grid[i][j][k2];
-			const float dist = get_distance(*p1,*p2);
+				struct particle *p1 = grid[i][j][k1];
+				for(int dr = -range; dr <= range; dr++) {
+					for(int dc = -range; dc <= range; dc++) {
+						if(i+dr == -1 || i+dr == ROWS) {
+							break;
+						}
+						if(j+dc == -1 || j + dc == COLS) {
+							continue;
+						}
+
+						for(int k2 = 0; k2 < grid_cell_counts[i+dr][j+dc]; k2++) {
+							struct particle *p2 = grid[i+dr][j+dc][k2];
+										const float dist = get_distance(*p1,*p2);
 			const float n_x = (p1->position.x - p2->position.x)/dist;
 			const float n_y = (p1->position.y - p2->position.y)/dist;
 			if(dist < 2*RADIUS) {
@@ -131,27 +140,26 @@ void solve_collisions(struct container *container) {
 					p1->position.y -= n_y*delta;
 					p2->position.y += n_y*delta;
 				}
-			}
-		}
+						}
+					}
+				}
+		// 		for(int k2 = k1 +1; k2<grid_cell_counts[i][j]; k2++) {
+		// 			struct particle *p1 = grid[i][j][k1];
+		// 			struct particle *p2 = grid[i][j][k2];
+		// 	const float dist = get_distance(*p1,*p2);
+		// 	const float n_x = (p1->position.x - p2->position.x)/dist;
+		// 	const float n_y = (p1->position.y - p2->position.y)/dist;
+		// 	if(dist < 2*RADIUS) {
+		// 		float delta = 0.5f*CR*(dist - 2*RADIUS);
+		// 			p1->position.x -= n_x*delta;
+		// 			p2->position.x += n_x*delta;
+		// 			p1->position.y -= n_y*delta;
+		// 			p2->position.y += n_y*delta;
+		// 		}
+		// 	}
+		// }
 	}
-
-	// for(size_t i = 0; i < particle_count; i++) {
-	// 	for(size_t k = i+1; k < particle_count; k++) {
-	// 		struct particle *p1 = &container->particles[i];
-	// 		struct particle *p2 = &container->particles[k];
-			
-	// 		const float dist = get_distance(*p1,*p2);
-	// 		const float n_x = (p1->position.x - p2->position.x)/dist;
-	// 		const float n_y = (p1->position.y - p2->position.y)/dist;
-	// 		if(dist < 2*RADIUS) {
-	// 			float delta = 0.5f*CR*(dist - 2*RADIUS);
-	// 				p1->position.x -= n_x*delta;
-	// 				p2->position.x += n_x*delta;
-	// 				p1->position.y -= n_y*delta;
-	// 				p2->position.y += n_y*delta;
-	// 		}
-	// 	}
-	// }
+		}
 }
 }
 
@@ -166,16 +174,14 @@ void draw(struct container *container) {
 		}
 
 		EndDrawing();
-	// for(size_t i = 0; i < ROWS; i++) {
-	// 	for(size_t j =0; j < COLS; j++) {
-	// 		for(size_t k = 0; k < grid_cell_counts[i][j]; k++) {
-	// 			free(grid[i][j][k]);
-	// 		}
-	// 		free(grid[i][j]);
-	// 	}
-	// 	free(grid[i]);
-	// }
-	// free(grid);
+	for(size_t i = 0; i < ROWS; i++) {
+		for(size_t j =0; j < COLS; j++) {
+			free(grid[i][j]);
+			// for(size_t k = 0; k < grid_cell_counts[i][j]; k++) {
+			// 	free(grid[i][j][k]);
+			// }
+		}
+	}
 }
 
 float get_distance(struct particle p, struct particle np) {
@@ -194,6 +200,7 @@ Color get_random_color() {
 
 
 void init(struct container *container) {
+	memset(grid_cell_counts, 0, sizeof(grid_cell_counts));
 
 	container->position = (Vector2){5,5};
 	container->size = (Vector2){WIDTH-10,HEIGHT-10};
@@ -239,6 +246,7 @@ int main(int argc, char *argv[])
 
 	struct container container;
 	init(&container);
+
 
 
 	while(!WindowShouldClose()) {
