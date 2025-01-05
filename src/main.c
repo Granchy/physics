@@ -8,8 +8,8 @@
 
 #define WIDTH 2560
 #define HEIGHT 1600
-#define PARTICLE_COUNT 1000000
-#define RADIUS 5.0f
+#define PARTICLE_COUNT 10000
+#define RADIUS 5.0f*2
 #define INIT_POS_X 5+RADIUS+1
 #define INIT_POS_Y 105
 #define INIT_VEL_X 50
@@ -66,7 +66,7 @@ void constraint(struct container *container) {
 	int x1 = container->position.x + container->size.x;
 
 	int y0 = container->position.y;
-	int y1 =  container->size.y + container->position.x;
+	int y1 =  container->size.y + container->position.y;
 
 	for(size_t i = 0; i < particle_count; i++) {
 		struct particle *p = &container->particles[i];
@@ -143,7 +143,7 @@ float get_distance(struct particle p, struct particle np) {
 }
 
 Color get_random_color() {
-	Color colors[] = { RED, GREEN, BLUE, YELLOW, ORANGE, PINK, WHITE, BLACK };
+	Color colors[] = { RED, GREEN, BLUE, YELLOW, ORANGE, PINK };
 	const int color_count = sizeof(colors)/sizeof(colors[0]);
 	return colors[GetRandomValue(0,color_count)]; 
 }
