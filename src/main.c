@@ -8,7 +8,7 @@
 
 #define WIDTH 800
 #define HEIGHT 600
-#define PARTICLE_COUNT 100
+#define PARTICLE_COUNT 10
 #define RADIUS 5.0f*2
 #define INIT_POS_X 5+RADIUS+1
 #define INIT_POS_Y 105
@@ -42,8 +42,6 @@ struct particle ***grid;
 
 int count = 0;
 
-void append_particle(size_t i, size_t j, struct particle p);
-void copy_particles_from_grid(struct container *container);
 float get_distance(struct particle p, struct particle np);
 Color get_random_color();
 
@@ -70,16 +68,7 @@ void update(struct container *container) {
 	}
 
 
-// 	for(size_t i = 0; i < particle_count; i++) {
-// 		struct particle *p = &container->particles[i];
-// float temp_pos_y = p->position.y;
-// float temp_pos_x = p->position.x;
-// 	p->position.y = 2*temp_pos_y - p->prev_position.y + a*dt*dt;
-// 	p->prev_position.y = temp_pos_y;
-// 	p->position.x = 2*temp_pos_x - p->prev_position.x;
-// 	p->prev_position.x = temp_pos_x;
 
-// 	}
 	
 }
 
@@ -96,7 +85,7 @@ void constraint(struct container *container) {
 	for(size_t i = 0; i < ROWS; i++) {
 		for(size_t j = 0; j < COLS; j++) {
 			for(size_t k = 0; k < container->grid_cell_counts[i][j]; k++) {
-				struct particle *p = &container->particles[i];
+				struct particle *p = &container->particles[i][j][k];
 
 	float v_y = (p->position.y - p->prev_position.y) * WALL_COLLISION_DAMPING;
 	float v_x = (p->position.x - p->prev_position.x) * WALL_COLLISION_DAMPING;
@@ -125,33 +114,6 @@ void constraint(struct container *container) {
 		}
 	}
 
-	// for(size_t i = 0; i < particle_count; i++) {
-	// 	struct particle *p = &container->particles[i];
-
-	// float v_y = (p->position.y - p->prev_position.y) * WALL_COLLISION_DAMPING;
-	// float v_x = (p->position.x - p->prev_position.x) * WALL_COLLISION_DAMPING;
-
-	// if(p->position.x + RADIUS >=x1) {
-	// 	p->position.x = x1 - RADIUS;
-	// 	p->prev_position.x = p->position.x + v_x;
-	// }
-
-	// if(p->position.x <=x0+RADIUS) {
-	// 	p->position.x= x0+RADIUS;
-	// 	p->prev_position.x = p->position.x + v_x;
-
-	// }
-
-	// if(p->position.y + RADIUS>= y1){
-	// 	p->position.y = y1-RADIUS;
-	// 	p->prev_position.y = p->position.y + v_y;
-	// }
-
-	// if(p->position.y <=y0+RADIUS) {
-	// 	p->position.y = y0+RADIUS;
-	// 	p->prev_position.y = p->position.y + v_y;
-	// }
-	// }
 
 	
 
@@ -159,10 +121,6 @@ void constraint(struct container *container) {
 
 void solve_collisions(struct container *container) {
 	int range = 1;
-	printf("%d\n",particle_count);
-	// for(size_t i = 0; i < particle_count; i++) {
-	// 	append_particle(container->particles[i].position.x/GRID_WIDTH, container->particles[i].position.y/GRID_HEIGHT, container->particles[i]);
-	// }
 
 	for(int i = 0; i < ROWS; i++) {
 		for(int j = 0; j < COLS; j++) {
@@ -170,8 +128,9 @@ void solve_collisions(struct container *container) {
 				struct particle *p1 = &container->particles[i][j][k1];
 				for(int dr = -range; dr <= range; dr++) {
 					for(int dc = -range; dc <= range; dc++) {
-						if(i + dr < 0 || i + dr >= ROWS || j + dc < 0 || j + dc <= COLS) {
+						if(i + dr < 0 || i + dr >= ROWS || j + dc < 0 || j + dc >= COLS) {
 							continue;
+
 						}
 						for(int k2 = 0; k2 < container->grid_cell_counts[i+dr][j+dc]; k2++) {
 							struct particle *p2 = &container->particles[i+dr][j+dc][k2];
@@ -183,7 +142,7 @@ void solve_collisions(struct container *container) {
 								const float dist = sqrt(dist2);
 								const float n_x = (p1->position.x - p2->position.x)/dist;
 								const float n_y = (p1->position.y - p2->position.y)/dist;
-								const delta = 0.5f*CR*(dist - min_distance);
+								const float delta = 0.5f*CR*(dist - min_distance);
 								p1->position.x -= n_x*delta;
 								p2->position.x += n_x*delta;
 								p1->position.y -= n_y*delta;
@@ -196,42 +155,6 @@ void solve_collisions(struct container *container) {
 		}
 	}
 
-
-// 	for(int i =0; i < ROWS; i++) {
-// 		for(int j =0; j < COLS; j++) {
-// 			for(int k1 = 0; k1 < grid_cell_counts[i][j]; k1++) {
-// 				struct particle *p1 = &(grid[i][j][k1]);
-// 				for(int dr = -range; dr <= range; dr++) {
-// 					for(int dc = -range; dc <= range; dc++) {
-// 						if (i + dr < 0 || i + dr >= ROWS || j + dc < 0 || j + dc >= COLS) {
-//     continue;
-// }
-// 					for(int k2 = 0; k2 < grid_cell_counts[i+dr][j+dc]; k2++) {
-// 							struct particle *p2 = &grid[i+dr][j+dc][k2];
-// 							const float dx = p1->position.x - p2->position.x;
-// 							const float dy = p1->position.y - p2->position.y;
-// 			const float dist2 = dx*dx + dy*dy;
-			
-// 			if(dist2 < 2*RADIUS*2*RADIUS) {
-// // printf("%d\n",++count);
-// 				const float dist = sqrt(dist2);
-// 				const float n_x = (p1->position.x - p2->position.x)/dist;
-// 			const float n_y = (p1->position.y - p2->position.y)/dist;
-// 				float delta = 0.5f*CR*(dist - 2*RADIUS);
-// 					// p1->position.x -= n_x*delta;
-// 					// p2->position.x += n_x*delta;
-// 					// p1->position.y -= n_y*delta;
-// 					// p2->position.y += n_y*delta;
-// 				}
-// 						}
-// 					}
-// 				}
-
-
-// 	}
-// 		}
-
-// }
 
 }
 
@@ -250,17 +173,31 @@ void draw(struct container *container) {
 	
 
 		EndDrawing();
-// for (size_t i = 0; i < ROWS; i++) {
-//     for (size_t j = 0; j < COLS; j++) {
-// 		// for(size_t k =0; k < grid_cell_counts[i][j]; k++) {
-// 		// 	free(&grid[i][j][k]);
-// 		// }
-// 			grid_cell_counts[i][j]=0;
-//     }
 
+}
+
+void update_grid(struct container *container) {
+	struct particle ***new_grid = malloc(ROWS*sizeof(struct particle **));
 	
-
-// }
+	int new_count[ROWS][COLS];
+	memset(new_count,0,sizeof(new_count));
+	for(size_t i = 0; i < ROWS; i++) {
+		new_grid[i] = malloc(COLS*sizeof(struct particle *));
+		for(size_t j =0; j < COLS; j++) {
+			new_grid[i][j] = malloc(1000*sizeof(struct particle));
+			for(size_t k = 0; k < container->grid_cell_counts[i][j]; k++) {
+				struct particle p = container->particles[i][j][k];
+				const int x = p.position.x/GRID_WIDTH;
+				const int y = p.position.y/GRID_HEIGHT;
+				new_grid[x][y][new_count[x][y]++] = p;
+			}
+		}
+	}
+	for(size_t i = 0; i < ROWS; i++) {
+		for(size_t j =0; j < COLS; j++) {
+			memcpy(&container->particles[i][j],&new_grid[i][j],new_count[i][j]*sizeof(struct particle));
+		}
+	}
 }
 
 float get_distance(struct particle p, struct particle np) {
@@ -283,62 +220,46 @@ void init(struct container *container) {
 
 	container->position = (Vector2){5,5};
 	container->size = (Vector2){WIDTH-10,HEIGHT-10};
-	container->particles = (struct particle *)malloc(PARTICLE_COUNT*sizeof(struct particle));
 
+
+	container->particles = malloc(ROWS*sizeof(struct particle **));
+	for(size_t i = 0; i < ROWS; i++) {
+		container->particles[i] = malloc(COLS*sizeof(struct particle*));
+		for(size_t j = 0; j < COLS; j++) {
+			container->particles[i][j] = malloc(1000*sizeof(struct particle));
+		}
+	}
 	
-
-	// for(size_t i = 0; i < PARTICLE_COUNT; i++) {
-	// 	container->particles[i].position.x = INIT_POS_X;
-	// 	container->particles[i].position.y = INIT_POS_Y;
-	// 	container->particles[i].prev_position.x = INIT_POS_X - INIT_VEL_X;
-	// 	container->particles[i].prev_position.y = INIT_POS_Y;
-	// 	container->particles[i].color = get_random_color();
-	// }
-
-	// grid = (struct particle ***)malloc(ROWS * sizeof(struct particle **));
-	// for(size_t i = 0; i < ROWS; i++) {
-	// 	grid[i] = (struct particle **)malloc(COLS * sizeof(struct particle *));
-	// 	for(size_t j = 0; j < COLS; j++) {
-	// 		grid[i][j] = (struct particle *)malloc(PARTICLE_COUNT*sizeof(struct particle));
-	// 	}
-	// 	}
-
-
-
 }
 
-void append_particle(size_t i, size_t j, struct particle p) {
-	grid[i][j][grid_cell_counts[i][j]] = p;
-	grid_cell_counts[i][j]++;
-}
 
-void copy_particles_from_grid(struct container *container) {
-    struct particle *p_ptr = container->particles;
-    for (size_t i = 0; i < ROWS; i++) {
-        for (size_t j = 0; j < COLS; j++) {
-            for (size_t k = 0; k < grid_cell_counts[i][j]; k++) {
-                // Copy the particle from the grid to the container's particle array
-                *p_ptr = grid[i][j][k];  // Dereference grid[i][j][k] and assign to p_ptr
-                p_ptr++;  // Move to the next position in container->particles
-            }
-        }
-    }
-}
 
 void add_particle(struct container *container) {
 	const int row = INIT_POS_X/GRID_WIDTH;
 	const int col = INIT_POS_Y/GRID_HEIGHT;
+	const int grid_cell_particle_count = container->grid_cell_counts[row][col];
 
-	container->particles[row][col][particle_count].position.x = INIT_POS_X;
-	container->particles[row][col][particle_count].position.y = INIT_POS_Y;
-	container->particles[row][col][particle_count].prev_position.x = INIT_POS_X - INIT_VEL_X;
-	container->particles[row][col][particle_count].prev_position.y = INIT_POS_Y;
-	container->particles[row][col][particle_count].color = get_random_color();
+	container->particles[row][col][grid_cell_particle_count].position.x = INIT_POS_X;
+	container->particles[row][col][grid_cell_particle_count].position.y = INIT_POS_Y;
+	container->particles[row][col][grid_cell_particle_count].prev_position.x = INIT_POS_X - INIT_VEL_X;
+	container->particles[row][col][grid_cell_particle_count].prev_position.y = INIT_POS_Y;
+	container->particles[row][col][grid_cell_particle_count].color = get_random_color();
 	
 	container->grid_cell_counts[row][col]++;
 	particle_count++;
 	}
 
+void print_particle_positions(struct container *container) {
+	int count = 0;
+	for(size_t i =0; i < ROWS; i++) {
+		for(size_t j=0; j < COLS; j++) {
+			for(size_t k =0; k < container->grid_cell_counts[i][j]; k++) {
+				struct particle p = container->particles[i][j][k];
+				printf("particle %d, x: %f y: %f\n", ++count, p.position.x, p.position.y);
+			}
+		}
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -372,9 +293,12 @@ int main(int argc, char *argv[])
 
 
 		update(&container);
+
 		constraint(&container);
 		solve_collisions(&container);
-		copy_particles_from_grid(&container);
+		update_grid(&container);
+
+		// copy_particles_from_grid(&container);
 		draw(&container);
 		
 		
