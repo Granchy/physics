@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/granch/documents/dev/physics/src/main.c" "CMakeFiles/physics.dir/src/main.c.o" "gcc" "CMakeFiles/physics.dir/src/main.c.o.d"
+  "/Users/granch/Documents/dev/physics/src/main.c" "CMakeFiles/physics.dir/src/main.c.o" "gcc" "CMakeFiles/physics.dir/src/main.c.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
