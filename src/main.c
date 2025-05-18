@@ -8,8 +8,8 @@
 
 #define WIDTH 800
 #define HEIGHT 600
-#define PARTICLE_COUNT 10
-#define RADIUS 5.0f*2
+#define PARTICLE_COUNT 10000
+#define RADIUS 5.0f
 #define INIT_POS_X 5+RADIUS+1
 #define INIT_POS_Y 105
 #define INIT_VEL_X 5
@@ -17,11 +17,12 @@
 #define FIXED_DT 1/60.0f
 #define WALL_COLLISION_DAMPING 0.5f
 #define MIN_STARTING_DISTANCE 45
-#define CR 1.0f
+#define CR .8f
 #define GRID_WIDTH 128
 #define GRID_HEIGHT 80
 #define ROWS 2560/GRID_WIDTH
 #define COLS 1600/GRID_HEIGHT
+#define DELAY .1f
 
 
 struct particle {
@@ -133,6 +134,9 @@ void solve_collisions(struct container *container) {
 
 						}
 						for(int k2 = 0; k2 < container->grid_cell_counts[i+dr][j+dc]; k2++) {
+							if(i+dr == i && j +dc == j && k1 == k2) {
+								continue;
+							}
 							struct particle *p2 = &container->particles[i+dr][j+dc][k2];
 							const float dx = p1->position.x - p2->position.x;
 							const float dy = p1->position.y - p2->position.y;
@@ -266,7 +270,7 @@ int main(int argc, char *argv[])
 	InitWindow(WIDTH,HEIGHT,"physics");
 	SetTargetFPS(60);
 
-	float particle_delay = 1.0f;
+	float particle_delay = DELAY;
 	float elapsed_time = 0.0f;
 
 	struct container container;
