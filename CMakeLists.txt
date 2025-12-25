@@ -9,6 +9,9 @@ link_directories(/opt/homebrew/lib)
 
 set(CMAKEJ_C_STANDARD 11)
 
+# Debug flags
+set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
+
 add_executable(physics src/main.c)
 
 target_link_libraries(physics raylib)
