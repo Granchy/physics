@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <raylib.h>
 #include <strings.h>
 #include <math.h>
@@ -71,7 +72,6 @@ void update(struct container *container) {
 
 	
 }
-
 
 void constraint(struct container *container) {
 
