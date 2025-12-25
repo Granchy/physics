@@ -6,7 +6,7 @@ C_DEFINES =
 
 C_INCLUDES = -I/opt/homebrew/include
 
-C_FLAGSarm64 =  -arch arm64
+C_FLAGSarm64 = -g -O0 -Wall -Wextra -arch arm64
 
-C_FLAGS =  -arch arm64
+C_FLAGS = -g -O0 -Wall -Wextra -arch arm64
 

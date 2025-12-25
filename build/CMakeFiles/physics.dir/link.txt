@@ -1,1 +1,1 @@
-/opt/homebrew/bin/aarch64-apple-darwin24-gcc-15  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/physics.dir/src/main.c.o -o physics   -L/opt/homebrew/lib  -Wl,-rpath,/opt/homebrew/lib -lraylib
+/opt/homebrew/bin/aarch64-apple-darwin24-gcc-15 -g -O0 -Wall -Wextra -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/physics.dir/src/main.c.o -o physics   -L/opt/homebrew/lib  -Wl,-rpath,/opt/homebrew/lib -lraylib

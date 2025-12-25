@@ -101,6 +101,7 @@ CMakeFiles/physics.dir/src/main.c.o: /Users/granch/Documents/dev/physics/src/mai
   /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include-fixed/stdio.h \
   /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stdarg.h \
   /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stdbool.h \
+  /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stddef.h \
   /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stdint.h \
   /opt/homebrew/include/raylib.h
 
@@ -108,6 +109,8 @@ CMakeFiles/physics.dir/src/main.c.o: /Users/granch/Documents/dev/physics/src/mai
 /opt/homebrew/include/raylib.h:
 
 /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stdint.h:
+
+/opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stddef.h:
 
 /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stdbool.h:
 

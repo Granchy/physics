@@ -85,6 +85,7 @@ CMakeFiles/physics.dir/src/main.c.o: \
  /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/usr/include/sys/_types/_ssize_t.h \
  /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/usr/include/secure/_stdio.h \
  /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/usr/include/secure/_common.h \
+ /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stddef.h \
  /opt/homebrew/include/raylib.h \
  /opt/homebrew/Cellar/gcc/15.1.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15/include/stdbool.h \
  /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/usr/include/strings.h \
